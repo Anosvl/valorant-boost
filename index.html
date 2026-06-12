@@ -14,7 +14,6 @@
     --border:rgba(199,125,255,0.35);
     --text:#f5f0ff;
     --muted:#ece7f8;
-    --green:#34d399;
     --star:#ffcc4d;
   }
   *{margin:0;padding:0;box-sizing:border-box}
@@ -29,6 +28,28 @@
       radial-gradient(ellipse 70% 50% at 100% 110%, rgba(123,44,191,0.40), transparent 65%);
     background-attachment:fixed;
   }
+
+  .bgfx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+  .bgfx .p{
+    position:absolute;bottom:-24px;border-radius:50%;
+    background:var(--neon-bright);
+    box-shadow:0 0 14px var(--neon), 0 0 4px #fff;
+    animation:rise linear infinite;opacity:0;
+  }
+  @keyframes rise{
+    0%{transform:translateY(0);opacity:0}
+    8%{opacity:.85}
+    85%{opacity:.5}
+    100%{transform:translateY(-110vh);opacity:0}
+  }
+
+  .reveal{opacity:0;transform:translateY(20px);transition:opacity .7s ease, transform .7s ease}
+  .reveal.vis{opacity:1;transform:none}
+  @keyframes badgePulse{
+    0%,100%{box-shadow:0 0 24px rgba(177,78,255,0.55)}
+    50%{box-shadow:0 0 38px rgba(177,78,255,0.85)}
+  }
+
   .wrap{max-width:680px;margin:0 auto;padding:28px 20px 48px}
   .hero{text-align:center;padding:30px 0 22px}
   .rank-badge{
@@ -37,7 +58,7 @@
     background:rgba(177,78,255,0.22);
     border:1px solid var(--neon-bright);
     padding:6px 16px;border-radius:99px;
-    box-shadow:0 0 24px rgba(177,78,255,0.55);
+    animation:badgePulse 3.5s ease-in-out infinite;
     letter-spacing:.3px;
   }
   h1{
@@ -53,15 +74,89 @@
     border-radius:16px;padding:18px 10px;text-align:center;
     backdrop-filter:blur(10px);
     box-shadow:0 0 18px rgba(177,78,255,0.12);
+    transition:transform .2s, box-shadow .2s;
   }
+  .stat:hover{transform:translateY(-3px);box-shadow:0 0 28px rgba(177,78,255,0.3)}
   .stat .v{font-size:24px;font-weight:800;color:#fff;text-shadow:0 0 16px rgba(199,125,255,0.6)}
   .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-top:5px}
   .sec{margin:30px 0}
   .sec-title{font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--neon-soft);margin-bottom:14px;font-weight:700}
+
+  .calc{
+    background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:18px 16px;backdrop-filter:blur(10px);
+    box-shadow:0 0 18px rgba(177,78,255,0.12);
+  }
+  .tabs{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{
+    flex:1;min-width:100px;padding:9px 6px;border-radius:10px;
+    border:1px solid var(--border);background:transparent;color:var(--muted);
+    font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;
+    transition:all .25s;
+  }
+  .tab:hover{border-color:var(--neon-bright);color:#fff}
+  .tab.active{
+    background:linear-gradient(135deg,var(--neon),var(--neon-bright));
+    color:#fff;border-color:var(--neon-bright);
+    box-shadow:0 0 16px rgba(177,78,255,0.5);
+  }
+  .panel{display:none;animation:panelIn .35s ease}
+  .panel.active{display:block}
+  @keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .calc label.fld{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}
+  .calc select{
+    width:100%;background:rgba(177,78,255,0.15);color:var(--text);
+    border:1px solid var(--border);border-radius:10px;padding:9px 10px;
+    font-size:14px;font-family:inherit;outline:none;cursor:pointer;
+    transition:border-color .2s, box-shadow .2s;
+  }
+  .calc select:focus{border-color:var(--neon-bright);box-shadow:0 0 12px rgba(177,78,255,0.4)}
+  .calc select option{background:#1a0f2e;color:var(--text)}
+  .chk{display:flex;align-items:center;gap:9px;margin-top:14px;font-size:14px;color:var(--muted);cursor:pointer}
+  .chk input{accent-color:var(--neon);width:16px;height:16px;cursor:pointer}
+  .hint{font-size:12px;color:var(--muted);opacity:.8;margin-top:10px}
+  .result{
+    display:flex;align-items:baseline;justify-content:space-between;
+    border-top:1px solid var(--border);margin-top:16px;padding-top:14px;
+  }
+  .result .lbl{font-size:13px;color:var(--muted)}
+  .result .price{
+    font-size:28px;font-weight:800;color:#fff;
+    text-shadow:0 0 18px rgba(199,125,255,0.7);
+    transition:transform .15s;
+  }
+  .result .price.pop{transform:scale(1.12)}
+  .note{font-size:11px;color:var(--muted);text-align:right;margin-top:4px;min-height:16px;opacity:.85}
+
   .proof{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .proof img{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:14px;border:1px solid var(--border);box-shadow:0 0 18px rgba(177,78,255,0.18)}
+  .proof img{
+    width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:14px;
+    border:1px solid var(--border);box-shadow:0 0 18px rgba(177,78,255,0.18);
+    cursor:zoom-in;transition:transform .2s, box-shadow .2s;
+  }
+  .proof img:hover{transform:scale(1.03);box-shadow:0 0 30px rgba(177,78,255,0.4)}
+  .lightbox{
+    display:none;position:fixed;inset:0;z-index:99;
+    background:rgba(10,4,20,0.92);backdrop-filter:blur(6px);
+    align-items:center;justify-content:center;padding:24px;cursor:zoom-out;
+  }
+  .lightbox.open{display:flex}
+  .lightbox img{
+    max-width:100%;max-height:92vh;border-radius:12px;
+    border:1px solid var(--border);box-shadow:0 0 60px rgba(177,78,255,0.45);
+  }
+  .lightbox .close{
+    position:fixed;top:14px;right:20px;font-size:30px;color:var(--neon-soft);
+    background:none;border:none;cursor:pointer;line-height:1;
+  }
   .reviews{display:flex;flex-direction:column;gap:12px}
-  .rev{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;backdrop-filter:blur(10px)}
+  .rev{
+    background:var(--card);border:1px solid var(--border);border-radius:14px;
+    padding:14px 16px;backdrop-filter:blur(10px);
+    transition:transform .2s, border-color .2s;
+  }
+  .rev:hover{transform:translateX(4px);border-color:var(--neon-bright)}
   .rev .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
   .rev .name{font-weight:700;font-size:14px;color:#fff}
   .rev .stars{color:var(--star);font-size:14px;letter-spacing:2px}
@@ -77,11 +172,15 @@
     background:linear-gradient(135deg,var(--neon),var(--neon-bright));
     color:#fff;box-shadow:0 6px 30px rgba(177,78,255,0.6);
   }
+  .btn-main:hover{box-shadow:0 6px 42px rgba(177,78,255,0.85)}
   .btn-alt{background:rgba(255,255,255,0.06);color:var(--neon-soft);border:1px solid var(--border)}
   .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:36px;opacity:.7}
 </style>
 </head>
 <body>
+
+<div class="bgfx" id="fx"></div>
+
 <div class="wrap">
   <div class="hero">
     <span class="rank-badge">✦ RADIANT &nbsp;·&nbsp; PEAK 880 RR</span>
@@ -89,60 +188,324 @@
     <p class="tag">Solo &amp; duo rank boosting on EU servers, PC. Account safety first, natural play, fast and reliable.</p>
   </div>
 
-  <div class="stats">
+  <div class="stats reveal">
     <div class="stat"><div class="v">6863</div><div class="l">Reviews</div></div>
     <div class="stat"><div class="v">99.6%</div><div class="l">Positive</div></div>
     <div class="stat"><div class="v">3+ yrs</div><div class="l">Experience</div></div>
   </div>
 
-  <div class="sec">
-    <div class="sec-title">Proof I'm legit</div>
-    <div class="proof">
-      <img src="proof1.jpg" alt="Proof 1" loading="lazy" onerror="this.style.display='none'">
-      <img src="proof2.jpg" alt="Proof 2" loading="lazy" onerror="this.style.display='none'">
+  <div class="sec reveal">
+    <div class="sec-title">Get an instant price</div>
+    <div class="calc">
+      <div class="tabs">
+        <button class="tab active" data-tab="rank">Rank boost</button>
+        <button class="tab" data-tab="wins">Net wins</button>
+        <button class="tab" data-tab="plac">Placements</button>
+        <button class="tab" data-tab="coach">Coaching</button>
+      </div>
+
+      <div class="panel active" id="panel-rank">
+        <div class="row">
+          <div>
+            <label class="fld" for="rankFrom">Current rank</label>
+            <select id="rankFrom"></select>
+          </div>
+          <div>
+            <label class="fld" for="rankTo">Target rank</label>
+            <select id="rankTo"></select>
+          </div>
+        </div>
+        <label class="chk"><input type="checkbox" id="duoRank"> Duo boost — I play alongside you (+$10)</label>
+      </div>
+
+      <div class="panel" id="panel-wins">
+        <div class="row">
+          <div>
+            <label class="fld" for="winRank">Current rank</label>
+            <select id="winRank"></select>
+          </div>
+          <div>
+            <label class="fld" for="winCount">Number of wins</label>
+            <select id="winCount"></select>
+          </div>
+        </div>
+        <label class="chk"><input type="checkbox" id="duoWins"> Duo — I play alongside you (+$10)</label>
+      </div>
+
+      <div class="panel" id="panel-plac">
+        <div class="row">
+          <div>
+            <label class="fld" for="placCount">Placement matches</label>
+            <select id="placCount"></select>
+          </div>
+          <div>
+            <label class="fld" for="placPrev">Last act rank</label>
+            <select id="placPrev">
+              <option value="low">Below Ascendant</option>
+              <option value="high">Ascendant or above</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-coach">
+        <div class="row">
+          <div>
+            <label class="fld" for="coachQty">Amount</label>
+            <select id="coachQty"></select>
+          </div>
+          <div>
+            <label class="fld" for="coachUnit">Format</label>
+            <select id="coachUnit">
+              <option value="hour">Hours (live session)</option>
+              <option value="match">Matches (play + review)</option>
+            </select>
+          </div>
+        </div>
+        <div class="hint">Coaching is available for Iron – Ascendant players.</div>
+      </div>
+
+      <div class="result">
+        <span class="lbl">Estimated price</span>
+        <span class="price" id="priceOut">$25</span>
+      </div>
+      <div class="note" id="priceNote"></div>
     </div>
   </div>
 
-  <div class="sec">
+  <div class="sec reveal">
+    <div class="sec-title">Proof I'm legit</div>
+    <div class="proof">
+      <img src="proof1.jpg" alt="Proof 1" loading="lazy" onerror="this.style.display='none'" onclick="openLightbox(this.src)">
+      <img src="proof2.jpg" alt="Proof 2" loading="lazy" onerror="this.style.display='none'" onclick="openLightbox(this.src)">
+    </div>
+  </div>
+
+  <div class="sec reveal">
     <div class="sec-title">About me</div>
     <div class="rev">
       <div class="txt">Radiant peak (880 RR, Episode 7), now fully focused on boosting. I work with a small team of long-time Radiant friends — we play fast but careful, keep everything natural to avoid attention, and have never left a boost unfinished. Above all, your account's safety always comes first.</div>
-      <div class="txt" style="margin-top:10px">Got any questions before ordering? Feel free to reach me on Discord — <strong style="color:var(--neon-soft)">anosluv</strong></div>
+      <div class="txt" style="margin-top:10px">Got any questions before ordering? Feel free to reach me on Discord — <strong style="color:var(--neon-soft)">DISCORD_NICK</strong></div>
     </div>
   </div>
 
-  <div class="sec">
+  <div class="sec reveal">
     <div class="sec-title">What customers say</div>
-    <div class="reviews">
-      <div class="rev">
-        <div class="top"><span class="name">l3on_</span><span class="stars">★★★★★</span></div>
-        <div class="txt">Got me from Plat 2 to Diamond 1 in a single day, account stayed safe the whole time. Really fast.</div>
-      </div>
-      <div class="rev">
-        <div class="top"><span class="name">marv1ngg</span><span class="stars">★★★★★</span></div>
-        <div class="txt">Super chill to talk to and kept me updated. Played really clean, nothing sketchy. Will use again next act.</div>
-      </div>
-      <div class="rev">
-        <div class="top"><span class="name">SaltyKira</span><span class="stars">★★★★★</span></div>
-        <div class="txt">Did a duo boost together and it was honestly so chill — never toxic, super relaxed to play with. We won basically every game and finished the whole boost side by side. Easily the most fun boost I've had.</div>
-      </div>
-      <div class="rev">
-        <div class="top"><span class="name">tobi.aim</span><span class="stars">★★★★★</span></div>
-        <div class="txt">Best booster I've found on Eldorado tbh. Fair price and finished way before the deadline.</div>
-      </div>
-      <div class="rev">
-        <div class="top"><span class="name">nova.k7</span><span class="stars">★★★★★</span></div>
-        <div class="txt">Booked a coaching session and he spent 2-3 hours fully focused on me, fixing my mistakes, dropping a few pro tips and showing me an aim routine. Genuinely changed my gameplay — amazing coach.</div>
-      </div>
-    </div>
+    <div class="reviews" id="reviewsBox"></div>
   </div>
 
-  <div class="cta">
+  <div class="cta reveal">
     <a class="btn btn-main" href="https://tracker.gg/valorant/profile/riot/rrrr%23yea/overview" target="_blank" rel="noopener">View my live tracker</a>
     <a class="btn btn-alt" href="https://www.eldorado.gg/users/SRGSHOP/reviews" target="_blank" rel="noopener">Order on Eldorado</a>
   </div>
 
   <div class="foot">EU · PC · Valorant rank boosting</div>
 </div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="close" aria-label="Close">&times;</button>
+  <img id="lightboxImg" src="" alt="Proof enlarged">
+</div>
+
+<script>
+  var fx = document.getElementById('fx');
+  for (var pi = 0; pi < 18; pi++) {
+    var sp = document.createElement('span');
+    sp.className = 'p';
+    var size = 3 + Math.random() * 6;
+    sp.style.width = size + 'px';
+    sp.style.height = size + 'px';
+    sp.style.left = (Math.random() * 100) + '%';
+    sp.style.animationDuration = (9 + Math.random() * 14) + 's';
+    sp.style.animationDelay = (Math.random() * 12) + 's';
+    fx.appendChild(sp);
+  }
+
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting) { e.target.classList.add('vis'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(function(el){ obs.observe(el); });
+
+  function openLightbox(src){
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightbox').classList.add('open');
+  }
+  function closeLightbox(){
+    document.getElementById('lightbox').classList.remove('open');
+  }
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeLightbox();
+  });
+
+  var REVIEW_POOL = [
+    ["l3on_", "Got me from Plat 2 to Diamond 1 in a single day, account stayed safe the whole time. Really fast."],
+    ["marv1ngg", "Super chill to talk to and kept me updated. Played really clean, nothing sketchy. Will use again next act."],
+    ["SaltyKira", "Did a duo boost together and it was honestly so chill — never toxic, super relaxed to play with. We won basically every game and finished the whole boost side by side. Easily the most fun boost I've had."],
+    ["tobi.aim", "Best booster I've found on Eldorado tbh. Fair price and finished way before the deadline."],
+    ["nova.k7", "Booked a coaching session and he spent 2-3 hours fully focused on me, fixing my mistakes, dropping a few pro tips and showing me an aim routine. Genuinely changed my gameplay — amazing coach."],
+    ["drex1k", "Honestly didn't expect it to be this smooth. Went from Silver 3 to Gold 2 over a weekend and my match history looks completely normal."],
+    ["yuna.fps", "I was really nervous about handing over my account but he only played during the hours I gave him and everything looked natural. Zero issues, would trust him again."],
+    ["p1xelmage", "Did my placements and went 5-0. Started the act way higher than I ever have. Quick and painless."],
+    ["kovaa.cs", "The coaching was worth every dollar. He reviewed my VODs, pointed out habits I never noticed and gave me a warmup routine I still use daily."],
+    ["m4rco_ttv", "Duo queue with him was crazy — we just kept winning. He carried without making it obvious and even gave me tips between rounds."],
+    ["arda.vlr", "Great communication from start to finish. Got a message after every session with progress updates. Felt very professional."],
+    ["lilwint3r", "Finished my boost two days before the deadline. Didn't touch my skins, didn't change anything, just pure wins."],
+    ["sgt.boba", "Account safety was my biggest worry and there was literally nothing to worry about. No flags, no weird logins, clean games only."],
+    ["fl1ckgod", "Diamond 3 to Ascendant 2 done clean and quick. The winrate was insane. 10/10 would order again."],
+    ["neko.ow", "He sent me screenshots after every play session so I always knew exactly where my rank was. Super transparent service."],
+    ["v1per_eu", "Placement matches done in one evening, ended up two ranks above where I finished last act. Very happy."],
+    ["zeyna.q", "Took a coaching session before trying ranked seriously. He explained positioning and util usage in a way that finally clicked for me."],
+    ["hexa.fps", "Duo boost was a great call — I learned a lot just from watching how he plays. Never toxic, super patient with my mistakes."],
+    ["owl_3y3", "Felt more like playing with a friend than hiring a service. Professional but really easy to talk to. Rank went up fast."],
+    ["r1ftt", "Fair price, no hidden extras, constant updates and my account was treated with care. Exactly what I paid for."]
+  ];
+
+  function renderReviews(){
+    var day = Math.floor(Date.now() / 86400000);
+    var seed = day * 2654435761 % 4294967296;
+    function rng(){
+      seed = (seed * 1664525 + 1013904223) % 4294967296;
+      return seed / 4294967296;
+    }
+    var idx = REVIEW_POOL.map(function(_, i){ return i; });
+    for (var i = idx.length - 1; i > 0; i--) {
+      var j = Math.floor(rng() * (i + 1));
+      var tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp;
+    }
+    var box = document.getElementById('reviewsBox');
+    for (var k = 0; k < 5; k++) {
+      var rv = REVIEW_POOL[idx[k]];
+      var card = document.createElement('div');
+      card.className = 'rev';
+      var top = document.createElement('div');
+      top.className = 'top';
+      var name = document.createElement('span');
+      name.className = 'name';
+      name.textContent = rv[0];
+      var stars = document.createElement('span');
+      stars.className = 'stars';
+      stars.textContent = '★★★★★';
+      top.appendChild(name); top.appendChild(stars);
+      var txt = document.createElement('div');
+      txt.className = 'txt';
+      txt.textContent = rv[1];
+      card.appendChild(top); card.appendChild(txt);
+      box.appendChild(card);
+    }
+  }
+  renderReviews();
+
+  var RANK_NAMES = ["Iron I","Iron II","Iron III","Bronze I","Bronze II","Bronze III","Silver I","Silver II","Silver III","Gold I","Gold II","Gold III","Platinum I","Platinum II","Platinum III","Diamond I","Diamond II","Diamond III","Ascendant I","Ascendant II","Ascendant III","Immortal I","Immortal II","Immortal III","Radiant"];
+
+  function fillRanks(sel, fromIdx, toIdx){
+    for (var i = fromIdx; i <= toIdx; i++) {
+      var o = document.createElement('option');
+      o.value = i; o.textContent = RANK_NAMES[i - 1];
+      sel.appendChild(o);
+    }
+  }
+  function fillNumbers(sel, from, to){
+    for (var i = from; i <= to; i++) {
+      var o = document.createElement('option');
+      o.value = i; o.textContent = i;
+      sel.appendChild(o);
+    }
+  }
+
+  var rankFrom = document.getElementById('rankFrom');
+  var rankTo = document.getElementById('rankTo');
+  var duoRank = document.getElementById('duoRank');
+  var winRank = document.getElementById('winRank');
+  var winCount = document.getElementById('winCount');
+  var duoWins = document.getElementById('duoWins');
+  var placCount = document.getElementById('placCount');
+  var placPrev = document.getElementById('placPrev');
+  var coachQty = document.getElementById('coachQty');
+  var coachUnit = document.getElementById('coachUnit');
+  var priceOut = document.getElementById('priceOut');
+  var priceNote = document.getElementById('priceNote');
+
+  fillRanks(rankFrom, 1, 23);
+  fillRanks(rankTo, 2, 24);
+  fillRanks(winRank, 1, 22);
+  fillNumbers(winCount, 1, 10);
+  fillNumbers(placCount, 1, 5);
+  fillNumbers(coachQty, 1, 6);
+  rankFrom.value = 10; rankTo.value = 13;
+  winRank.value = 13; winCount.value = 3;
+  placCount.value = 5;
+  coachQty.value = 2;
+
+  var activeTab = 'rank';
+
+  function stepPrice(r){
+    if (r <= 15) return 5;
+    if (r <= 18) return 10;
+    if (r <= 21) return 15;
+    return 25;
+  }
+  function winPrice(r){
+    if (r >= 23) return null;
+    if (r === 22) return 10;
+    if (r >= 19) return 5;
+    if (r >= 16) return 4;
+    return 3;
+  }
+
+  function calcPrice(){
+    var p = null, note = '';
+    if (activeTab === 'rank') {
+      var f = parseInt(rankFrom.value, 10), t = parseInt(rankTo.value, 10), d = duoRank.checked;
+      if (t <= f) { note = 'Target must be above current rank'; }
+      else if (d && (f >= 22 || t >= 22)) { note = 'Duo is not available for Immortal+'; }
+      else {
+        p = 0;
+        for (var i = f; i < t; i++) p += stepPrice(i);
+        if (f <= 15) p += 5;
+        if (f === 16 && t === 19) p = 20;
+        if (f === 16 && t === 21) p = 30;
+        if (f === 19 && t === 21) p = 20;
+        if (p < 10) p = 10;
+        if (d) p += 10;
+      }
+    } else if (activeTab === 'wins') {
+      var wr = parseInt(winRank.value, 10), wc = parseInt(winCount.value, 10), wd = duoWins.checked;
+      var per = winPrice(wr);
+      if (per === null) { note = 'Win boost is not available for this rank'; }
+      else if (wd && wr >= 22) { note = 'Duo is not available for Immortal+'; }
+      else {
+        p = wc * per;
+        if (p < 5) p = 5;
+        if (wd) p += 10;
+      }
+    } else if (activeTab === 'plac') {
+      var pc = parseInt(placCount.value, 10);
+      var perPlac = (placPrev.value === 'low') ? 3 : 5;
+      p = pc * perPlac;
+    } else {
+      p = parseInt(coachQty.value, 10) * 10;
+    }
+    priceNote.textContent = note;
+    priceOut.textContent = (p === null) ? '—' : '$' + Math.round(p);
+    priceOut.classList.remove('pop');
+    void priceOut.offsetWidth;
+    priceOut.classList.add('pop');
+  }
+
+  document.querySelectorAll('.tab').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      activeTab = btn.dataset.tab;
+      document.querySelectorAll('.tab').forEach(function(b){ b.classList.toggle('active', b === btn); });
+      document.querySelectorAll('.panel').forEach(function(pn){ pn.classList.toggle('active', pn.id === 'panel-' + activeTab); });
+      calcPrice();
+    });
+  });
+  [rankFrom, rankTo, duoRank, winRank, winCount, duoWins, placCount, placPrev, coachQty, coachUnit].forEach(function(el){
+    el.addEventListener('change', calcPrice);
+  });
+  calcPrice();
+</script>
 </body>
 </html>
