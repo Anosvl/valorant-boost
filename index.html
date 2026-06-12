@@ -485,7 +485,7 @@
       var perPlac = (placPrev.value === 'low') ? 3 : 5;
       p = pc * perPlac;
     } else {
-      p = parseInt(coachQty.value, 10) * 10;
+      p = parseInt(coachQty.value, 10) * 7;
     }
     priceNote.textContent = note;
     priceOut.textContent = (p === null) ? '—' : '$' + Math.round(p);
