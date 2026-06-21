@@ -215,7 +215,7 @@
             <select id="rankTo"></select>
           </div>
         </div>
-        <label class="chk"><input type="checkbox" id="duoRank"> Duo boost — I play alongside you (+$10)</label>
+        <label class="chk"><input type="checkbox" id="duoRank"> Duo boost — I play alongside you (duo rate)</label>
       </div>
 
       <div class="panel" id="panel-wins">
@@ -229,7 +229,7 @@
             <select id="winCount"></select>
           </div>
         </div>
-        <label class="chk"><input type="checkbox" id="duoWins"> Duo — I play alongside you (+$10)</label>
+        <label class="chk"><input type="checkbox" id="duoWins"> Duo — I play alongside you (duo rate)</label>
       </div>
 
       <div class="panel" id="panel-plac">
@@ -270,6 +270,10 @@
         <span class="price" id="priceOut">$25</span>
       </div>
       <div class="note" id="priceNote"></div>
+      <a href="https://discord.gg/GdfsmB3AQk" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:9px;margin-top:14px;background:#5865F2;color:#fff;font-weight:700;font-size:14px;padding:12px;border-radius:10px;text-decoration:none;box-shadow:0 4px 18px rgba(88,101,242,0.45);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        Questions? Join our Discord
+      </a>
     </div>
   </div>
 
@@ -440,11 +444,16 @@
 
   var activeTab = 'rank';
 
+  // Bot ile birebir: basamak başına = tier'ın $/RR oranı × 100 RR.
   function stepPrice(r){
-    if (r <= 15) return 5;
-    if (r <= 18) return 10;
-    if (r <= 21) return 15;
-    return 25;
+    if (r <= 3) return 1;    // Iron
+    if (r <= 6) return 2;    // Bronze
+    if (r <= 9) return 3;    // Silver
+    if (r <= 12) return 4;   // Gold
+    if (r <= 15) return 5;   // Platinum
+    if (r <= 18) return 8;   // Diamond
+    if (r <= 21) return 10;  // Ascendant
+    return 30;               // Immortal
   }
   function winPrice(r){
     if (r >= 23) return null;
@@ -453,32 +462,46 @@
     if (r >= 16) return 4;
     return 3;
   }
+  // Artan duo eki: ilk 2 basamak +$10, sonra her basamak +$10; 5'in katına yuvarlı.
+  function applyDuo(price, rankDiff){
+    var divs = (rankDiff && rankDiff > 0) ? rankDiff : 1;
+    var add = 10 + Math.max(0, divs - 2) * 10;
+    return Math.round((price + add) / 5) * 5;
+  }
+  // Sabit özel paketler (formül + Immortal primi dışında).
+  var PRICE_OVERRIDES = { '19_20':15, '19_21':20, '19_22':30, '20_22':25, '21_22':20 };
 
   function calcPrice(){
     var p = null, note = '';
     if (activeTab === 'rank') {
       var f = parseInt(rankFrom.value, 10), t = parseInt(rankTo.value, 10), d = duoRank.checked;
       if (t <= f) { note = 'Target must be above current rank'; }
-      else if (d && (f >= 22 || t >= 22)) { note = 'Duo is not available for Immortal+'; }
+      else if (t >= 25 || f >= 25) { note = 'No boosting to or from Radiant'; }
+      else if (d && t >= 22) { note = 'Duo is not available for Immortal+'; }
+      else if (f <= 15 && (t - f) < 2) { note = 'Minimum 2 ranks for Platinum and below'; }
       else {
-        p = 0;
-        for (var i = f; i < t; i++) p += stepPrice(i);
-        if (f <= 15) p += 5;
-        if (f === 16 && t === 19) p = 20;
-        if (f === 16 && t === 21) p = 30;
-        if (f === 19 && t === 21) p = 20;
-        if (p < 10) p = 10;
-        if (d) p += 10;
+        var key = f + '_' + t;
+        if (PRICE_OVERRIDES[key] != null) {
+          p = PRICE_OVERRIDES[key];
+        } else {
+          p = 0;
+          for (var i = f; i < t; i++) p += stepPrice(i);
+          if (f < 22 && t >= 22) p += 15;   // Immortal'a çıkış primi
+        }
+        if (d) p = applyDuo(p, t - f);
       }
     } else if (activeTab === 'wins') {
       var wr = parseInt(winRank.value, 10), wc = parseInt(winCount.value, 10), wd = duoWins.checked;
       var per = winPrice(wr);
       if (per === null) { note = 'Win boost is not available for this rank'; }
       else if (wd && wr >= 22) { note = 'Duo is not available for Immortal+'; }
-      else {
+      else if (wd && wr < 16) {
+        // Diamond altı duo win: ilk 5 maç $5/maç, sonrası $10/maç
+        p = (wc <= 5) ? (wc * 5) : (25 + (wc - 5) * 10);
+      } else {
         p = wc * per;
         if (p < 5) p = 5;
-        if (wd) p += 10;
+        if (wd) p = applyDuo(p, 1);
       }
     } else if (activeTab === 'plac') {
       var pc = parseInt(placCount.value, 10);
