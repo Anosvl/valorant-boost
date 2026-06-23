@@ -239,11 +239,8 @@
             <select id="placCount"></select>
           </div>
           <div>
-            <label class="fld" for="placPrev">Last act rank</label>
-            <select id="placPrev">
-              <option value="low">Below Ascendant</option>
-              <option value="high">Ascendant or above</option>
-            </select>
+            <label class="fld" for="placPrev">Previous season rank</label>
+            <select id="placPrev"></select>
           </div>
         </div>
       </div>
@@ -436,10 +433,12 @@
   fillRanks(winRank, 1, 22);
   fillNumbers(winCount, 1, 10);
   fillNumbers(placCount, 1, 5);
+  fillRanks(placPrev, 1, 25);
   fillNumbers(coachQty, 1, 6);
   rankFrom.value = 10; rankTo.value = 13;
   winRank.value = 13; winCount.value = 3;
   placCount.value = 5;
+  placPrev.value = 19;
   coachQty.value = 2;
 
   var activeTab = 'rank';
@@ -505,8 +504,13 @@
       }
     } else if (activeTab === 'plac') {
       var pc = parseInt(placCount.value, 10);
-      var perPlac = (placPrev.value === 'low') ? 3 : 5;
-      p = pc * perPlac;
+      var pr = parseInt(placPrev.value, 10); // previous season rank index (1-25)
+      if (pr >= 23) {
+        note = 'Placements offered up to Immortal I only';
+      } else {
+        var perPlac = (pr === 22) ? 5 : (pr >= 19) ? 4 : 3;
+        p = pc * perPlac;
+      }
     } else {
       p = parseInt(coachQty.value, 10) * 7;
     }
