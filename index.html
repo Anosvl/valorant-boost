@@ -189,7 +189,7 @@
   </div>
 
   <div class="stats reveal">
-    <div class="stat"><div class="v">6863</div><div class="l">Reviews</div></div>
+    <div class="stat"><div class="v" id="statReviews">6863</div><div class="l">Reviews</div></div>
     <div class="stat"><div class="v">99.6%</div><div class="l">Positive</div></div>
     <div class="stat"><div class="v">3+ yrs</div><div class="l">Experience</div></div>
   </div>
@@ -292,7 +292,6 @@
 
   <div class="sec reveal">
     <div class="sec-title">What customers say</div>
-    <div id="revMeta" style="font-size:12.5px;color:var(--muted);margin:-6px 0 14px">★ 99.6% positive seller rating on Eldorado</div>
     <div class="reviews" id="reviewsBox"></div>
   </div>
 
@@ -341,9 +340,7 @@
     if (e.key === 'Escape') closeLightbox();
   });
 
-  // ══ GÜNLÜK ÜRETİLEN YORUMLAR ══
-  // Her UTC gününde nick + yorum metinleri şablonlardan YENİDEN üretilir (gün içinde sabit,
-  // ertesi gün tamamen farklı). Sunucu yok — tarih tohumlu rastgelelik, tamamen istemci tarafı.
+  // testimonials
   var day = Math.floor(Date.now() / 86400000);
   var _seed = (day * 2654435761) % 4294967296;
   function rng(){
@@ -360,7 +357,6 @@
     return a;
   }
 
-  // ── Nick üreteci ──
   var NICK_A = ["frost","nova","aim","echo","pixel","viper","luna","drift","rex","mika","void","neko","sly","ace","kuro","fade","jinx","ember","yato","skye","ori","nyx","volt","haze","zero","kai","mono","riko","dusk","wisp","zenko","rune","glow","sable","iris","onyx","milo","fenix","yumi","crow"];
   var NICK_B = ["fps","tv","x","gg","q","one","dev","eu","vlr","aim","ow","zz","san","cs","ttv","yt"];
   function genNick(){
@@ -374,11 +370,10 @@
     return "x" + a + num;
   }
 
-  // ── Yorum şablon bankaları (Valorant boost övgüsü, 1-2 cümle) ──
   var TIERS = ["Iron 1","Iron 2","Iron 3","Bronze 1","Bronze 2","Bronze 3","Silver 1","Silver 2","Silver 3","Gold 1","Gold 2","Gold 3","Plat 1","Plat 2","Plat 3","Diamond 1","Diamond 2","Diamond 3","Asc 1","Asc 2","Asc 3","Immortal 1"];
   function rankPair(capIdx){
     var cap = (capIdx != null) ? capIdx : TIERS.length - 1;
-    var f = Math.floor(rng() * 17) + 2;           // Iron 3 .. Diamond 1 arası başlangıç
+    var f = Math.floor(rng() * 17) + 2;
     var t = Math.min(f + 2 + Math.floor(rng() * 4), cap);
     if (t <= f) t = Math.min(f + 2, cap);
     return [TIERS[f], TIERS[t]];
@@ -403,7 +398,6 @@
   function buildReview(kind){
     var rp = rankPair(), r1 = rp[0], r2 = rp[1];
     if (kind === "duo") {
-      // Duo Immortal'a yapılmıyor → hedef en fazla Asc 3 (index 20).
       var dp = rankPair(20);
       return "Duo boost from " + dp[0] + " to " + dp[1] + " was actually fun — " + pick(DUO_Q) + ". " + pick(CLOSERS);
     }
@@ -413,29 +407,25 @@
       return "Placements done " + pick(TIMES) + ", went " + (4 + Math.floor(rng() * 2)) + "-" + Math.floor(rng() * 2) + " and started the act higher than ever. " + pick(CLOSERS);
     if (kind === "general")
       return pick(GENERAL) + " " + pick(CLOSERS);
-    // rank boost (varsayılan)
     var v = Math.floor(rng() * 3);
     if (v === 0) return "Got boosted from " + r1 + " to " + r2 + " " + pick(TIMES) + " and " + pick(QUALITY) + ". " + pick(CLOSERS);
     if (v === 1) return r1 + " to " + r2 + " done " + pick(TIMES) + " — " + pick(QUALITY) + ". " + pick(CLOSERS);
-    var q = pick(QUALITY); // TEK seçim — baş harf + gövde aynı cümleden gelsin
+    var q = pick(QUALITY);
     return "Ordered " + r1 + " to " + r2 + " and it was finished " + pick(TIMES) + ". " + q.charAt(0).toUpperCase() + q.slice(1) + ".";
   }
 
-  // ── ELDORADO REVIEW SAYACI ──
-  // Statik bir GitHub sayfası Eldorado'dan CANLI veri çekemez (CORS/oturum engeli). Bu yüzden
-  // sayı, bilinen bir tabandan günlük otomatik artan tahminle ilerler. Eldorado'daki gerçek
-  // sayıyı gördüğünde SADECE şu iki satırı güncelle (senkron noktası):
-  var ELDO_BASE_COUNT = 7827;         // Eldorado profilindeki review sayısı
-  var ELDO_BASE_DATE  = "2026-07-05"; // o sayıyı gördüğün tarih (YYYY-AA-GG)
-  var ELDO_PER_WEEK   = 3;            // haftalık ortalama yeni review (artış hızı tahmini)
-  function eldoReviewCount(){
-    var days = Math.max(0, Math.floor((Date.now() - new Date(ELDO_BASE_DATE + "T00:00:00Z").getTime()) / 86400000));
-    return ELDO_BASE_COUNT + Math.floor(days * ELDO_PER_WEEK / 7);
+  // profile stats
+  var statBase = 7827;
+  var statSince = "2026-07-05";
+  var statRate = 3;
+  function statCount(){
+    var days = Math.max(0, Math.floor((Date.now() - new Date(statSince + "T00:00:00Z").getTime()) / 86400000));
+    return statBase + Math.floor(days * statRate / 7);
   }
 
   function renderReviews(){
-    var meta = document.getElementById('revMeta');
-    if (meta) meta.textContent = "★ 99.6% positive · " + eldoReviewCount().toLocaleString("en-US") + " reviews on Eldorado";
+    var sv = document.getElementById('statReviews');
+    if (sv) sv.textContent = statCount().toLocaleString("en-US");
 
     var kinds = shuffled(["rank","rank","rank","duo",(rng() < 0.5 ? "coach" : "plac"),"general"]);
     var box = document.getElementById('reviewsBox');
@@ -510,7 +500,7 @@
 
   var activeTab = 'rank';
 
-  // Bot ile birebir: basamak başına = tier'ın $/RR oranı × 100 RR.
+  // per-division pricing
   function stepPrice(r){
     if (r <= 3) return 1;    // Iron
     if (r <= 6) return 2;    // Bronze
@@ -528,13 +518,13 @@
     if (r >= 16) return 4;
     return 3;
   }
-  // Artan duo eki: ilk 2 basamak +$10, sonra her basamak +$10; 5'in katına yuvarlı.
+  // duo rate
   function applyDuo(price, rankDiff){
     var divs = (rankDiff && rankDiff > 0) ? rankDiff : 1;
     var add = 10 + Math.max(0, divs - 2) * 10;
     return Math.round((price + add) / 5) * 5;
   }
-  // Sabit özel paketler (formül + Immortal primi dışında).
+  // fixed packages
   var PRICE_OVERRIDES = { '19_20':15, '19_21':20, '19_22':30, '20_22':25, '21_22':20 };
 
   function calcPrice(){
@@ -552,8 +542,8 @@
         } else {
           p = 0;
           for (var i = f; i < t; i++) p += stepPrice(i);
-          if (f < 22 && t >= 22) p += 15;   // Immortal'a çıkış primi
-          if (p < 5) p = 5;                 // minimum toplam $5
+          if (f < 22 && t >= 22) p += 15;
+          if (p < 5) p = 5;
         }
         if (d) p = applyDuo(p, t - f);
       }
@@ -563,7 +553,7 @@
       if (per === null) { note = 'Win boost is not available for this rank'; }
       else if (wd && wr >= 22) { note = 'Duo is not available for Immortal+'; }
       else if (wd && wr < 16) {
-        // Diamond altı duo win: ilk 5 maç $5/maç, sonrası $10/maç
+
         p = (wc <= 5) ? (wc * 5) : (25 + (wc - 5) * 10);
       } else {
         p = wc * per;
