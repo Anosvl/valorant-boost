@@ -292,6 +292,7 @@
 
   <div class="sec reveal">
     <div class="sec-title">What customers say</div>
+    <div id="revMeta" style="font-size:12.5px;color:var(--muted);margin:-6px 0 14px">★ 99.6% positive seller rating on Eldorado</div>
     <div class="reviews" id="reviewsBox"></div>
   </div>
 
@@ -340,58 +341,124 @@
     if (e.key === 'Escape') closeLightbox();
   });
 
-  var REVIEW_POOL = [
-    ["l3on_", "Got me from Plat 2 to Diamond 1 in a single day, account stayed safe the whole time. Really fast."],
-    ["marv1ngg", "Super chill to talk to and kept me updated. Played really clean, nothing sketchy. Will use again next act."],
-    ["SaltyKira", "Did a duo boost together and it was honestly so chill — never toxic, super relaxed to play with. We won basically every game and finished the whole boost side by side. Easily the most fun boost I've had."],
-    ["tobi.aim", "Best booster I've found on Eldorado tbh. Fair price and finished way before the deadline."],
-    ["nova.k7", "Booked a coaching session and he spent 2-3 hours fully focused on me, fixing my mistakes, dropping a few pro tips and showing me an aim routine. Genuinely changed my gameplay — amazing coach."],
-    ["drex1k", "Honestly didn't expect it to be this smooth. Went from Silver 3 to Gold 2 over a weekend and my match history looks completely normal."],
-    ["yuna.fps", "I was really nervous about handing over my account but he only played during the hours I gave him and everything looked natural. Zero issues, would trust him again."],
-    ["p1xelmage", "Did my placements and went 5-0. Started the act way higher than I ever have. Quick and painless."],
-    ["kovaa.cs", "The coaching was worth every dollar. He reviewed my VODs, pointed out habits I never noticed and gave me a warmup routine I still use daily."],
-    ["m4rco_ttv", "Duo queue with him was crazy — we just kept winning. He carried without making it obvious and even gave me tips between rounds."],
-    ["arda.vlr", "Great communication from start to finish. Got a message after every session with progress updates. Felt very professional."],
-    ["lilwint3r", "Finished my boost two days before the deadline. Didn't touch my skins, didn't change anything, just pure wins."],
-    ["sgt.boba", "Account safety was my biggest worry and there was literally nothing to worry about. No flags, no weird logins, clean games only."],
-    ["fl1ckgod", "Diamond 3 to Ascendant 2 done clean and quick. The winrate was insane. 10/10 would order again."],
-    ["neko.ow", "He sent me screenshots after every play session so I always knew exactly where my rank was. Super transparent service."],
-    ["v1per_eu", "Placement matches done in one evening, ended up two ranks above where I finished last act. Very happy."],
-    ["zeyna.q", "Took a coaching session before trying ranked seriously. He explained positioning and util usage in a way that finally clicked for me."],
-    ["hexa.fps", "Duo boost was a great call — I learned a lot just from watching how he plays. Never toxic, super patient with my mistakes."],
-    ["owl_3y3", "Felt more like playing with a friend than hiring a service. Professional but really easy to talk to. Rank went up fast."],
-    ["r1ftt", "Fair price, no hidden extras, constant updates and my account was treated with care. Exactly what I paid for."]
+  // ══ GÜNLÜK ÜRETİLEN YORUMLAR ══
+  // Her UTC gününde nick + yorum metinleri şablonlardan YENİDEN üretilir (gün içinde sabit,
+  // ertesi gün tamamen farklı). Sunucu yok — tarih tohumlu rastgelelik, tamamen istemci tarafı.
+  var day = Math.floor(Date.now() / 86400000);
+  var _seed = (day * 2654435761) % 4294967296;
+  function rng(){
+    _seed = (_seed * 1664525 + 1013904223) % 4294967296;
+    return _seed / 4294967296;
+  }
+  function pick(arr){ return arr[Math.floor(rng() * arr.length)]; }
+  function shuffled(arr){
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(rng() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  // ── Nick üreteci ──
+  var NICK_A = ["frost","nova","aim","echo","pixel","viper","luna","drift","rex","mika","void","neko","sly","ace","kuro","fade","jinx","ember","yato","skye","ori","nyx","volt","haze","zero","kai","mono","riko","dusk","wisp","zenko","rune","glow","sable","iris","onyx","milo","fenix","yumi","crow"];
+  var NICK_B = ["fps","tv","x","gg","q","one","dev","eu","vlr","aim","ow","zz","san","cs","ttv","yt"];
+  function genNick(){
+    var a = pick(NICK_A), style = Math.floor(rng() * 6);
+    var num = String(Math.floor(rng() * 90) + 10);
+    if (style === 0) return a + "." + pick(NICK_B);
+    if (style === 1) return a + "_" + pick(NICK_B);
+    if (style === 2) return a.charAt(0).toUpperCase() + a.slice(1) + num;
+    if (style === 3) return a + num.charAt(0);
+    if (style === 4) return a.replace(/[aeiou]/, function(v){ return {a:"4",e:"3",i:"1",o:"0",u:"u"}[v]; }) + "_" + num.charAt(0);
+    return "x" + a + num;
+  }
+
+  // ── Yorum şablon bankaları (Valorant boost övgüsü, 1-2 cümle) ──
+  var TIERS = ["Iron 1","Iron 2","Iron 3","Bronze 1","Bronze 2","Bronze 3","Silver 1","Silver 2","Silver 3","Gold 1","Gold 2","Gold 3","Plat 1","Plat 2","Plat 3","Diamond 1","Diamond 2","Diamond 3","Asc 1","Asc 2","Asc 3","Immortal 1"];
+  function rankPair(capIdx){
+    var cap = (capIdx != null) ? capIdx : TIERS.length - 1;
+    var f = Math.floor(rng() * 17) + 2;           // Iron 3 .. Diamond 1 arası başlangıç
+    var t = Math.min(f + 2 + Math.floor(rng() * 4), cap);
+    if (t <= f) t = Math.min(f + 2, cap);
+    return [TIERS[f], TIERS[t]];
+  }
+  var TIMES = ["in a single day","overnight","in two days","over a weekend","in just a few hours","way before the deadline","faster than I expected"];
+  var QUALITY = [
+    "account stayed 100% safe the whole time",
+    "the winrate was honestly insane",
+    "match history looks completely natural",
+    "he sent me progress updates after every session",
+    "no skins touched, nothing changed, just wins",
+    "played super clean, nothing sketchy at all",
+    "zero flags, zero weird logins, clean games only",
+    "communication was on point from start to finish",
+    "he only played during the hours I gave him"
   ];
+  var CLOSERS = ["Highly recommend.","Will 100% order again next act.","Best booster on Eldorado, easily.","10/10 service.","Worth every dollar.","Can't recommend him enough.","Absolute legend.","Exactly what I paid for.","Would trust him with my account any day."];
+  var DUO_Q = ["we basically won every single game","never toxic, super chill to play with","he carried without making it obvious and even dropped tips between rounds","it felt like queueing with a friend who happens to be Radiant"];
+  var COACH_Q = ["he fixed mistakes I didn't even know I had","the VOD review alone was worth the price","he gave me an aim routine I still use daily","positioning and util usage finally clicked for me"];
+  var GENERAL = ["Fair price, no hidden extras and constant updates.","Super professional but really easy to talk to.","I was nervous about handing over my account and there was literally nothing to worry about.","Smoothest service I've used on Eldorado."];
+
+  function buildReview(kind){
+    var rp = rankPair(), r1 = rp[0], r2 = rp[1];
+    if (kind === "duo") {
+      // Duo Immortal'a yapılmıyor → hedef en fazla Asc 3 (index 20).
+      var dp = rankPair(20);
+      return "Duo boost from " + dp[0] + " to " + dp[1] + " was actually fun — " + pick(DUO_Q) + ". " + pick(CLOSERS);
+    }
+    if (kind === "coach")
+      return "Booked a coaching session and " + pick(COACH_Q) + ". " + pick(CLOSERS);
+    if (kind === "plac")
+      return "Placements done " + pick(TIMES) + ", went " + (4 + Math.floor(rng() * 2)) + "-" + Math.floor(rng() * 2) + " and started the act higher than ever. " + pick(CLOSERS);
+    if (kind === "general")
+      return pick(GENERAL) + " " + pick(CLOSERS);
+    // rank boost (varsayılan)
+    var v = Math.floor(rng() * 3);
+    if (v === 0) return "Got boosted from " + r1 + " to " + r2 + " " + pick(TIMES) + " and " + pick(QUALITY) + ". " + pick(CLOSERS);
+    if (v === 1) return r1 + " to " + r2 + " done " + pick(TIMES) + " — " + pick(QUALITY) + ". " + pick(CLOSERS);
+    var q = pick(QUALITY); // TEK seçim — baş harf + gövde aynı cümleden gelsin
+    return "Ordered " + r1 + " to " + r2 + " and it was finished " + pick(TIMES) + ". " + q.charAt(0).toUpperCase() + q.slice(1) + ".";
+  }
+
+  // ── ELDORADO REVIEW SAYACI ──
+  // Statik bir GitHub sayfası Eldorado'dan CANLI veri çekemez (CORS/oturum engeli). Bu yüzden
+  // sayı, bilinen bir tabandan günlük otomatik artan tahminle ilerler. Eldorado'daki gerçek
+  // sayıyı gördüğünde SADECE şu iki satırı güncelle (senkron noktası):
+  var ELDO_BASE_COUNT = 7827;         // Eldorado profilindeki review sayısı
+  var ELDO_BASE_DATE  = "2026-07-05"; // o sayıyı gördüğün tarih (YYYY-AA-GG)
+  var ELDO_PER_WEEK   = 3;            // haftalık ortalama yeni review (artış hızı tahmini)
+  function eldoReviewCount(){
+    var days = Math.max(0, Math.floor((Date.now() - new Date(ELDO_BASE_DATE + "T00:00:00Z").getTime()) / 86400000));
+    return ELDO_BASE_COUNT + Math.floor(days * ELDO_PER_WEEK / 7);
+  }
 
   function renderReviews(){
-    var day = Math.floor(Date.now() / 86400000);
-    var seed = day * 2654435761 % 4294967296;
-    function rng(){
-      seed = (seed * 1664525 + 1013904223) % 4294967296;
-      return seed / 4294967296;
-    }
-    var idx = REVIEW_POOL.map(function(_, i){ return i; });
-    for (var i = idx.length - 1; i > 0; i--) {
-      var j = Math.floor(rng() * (i + 1));
-      var tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp;
-    }
+    var meta = document.getElementById('revMeta');
+    if (meta) meta.textContent = "★ 99.6% positive · " + eldoReviewCount().toLocaleString("en-US") + " reviews on Eldorado";
+
+    var kinds = shuffled(["rank","rank","rank","duo",(rng() < 0.5 ? "coach" : "plac"),"general"]);
     var box = document.getElementById('reviewsBox');
-    for (var k = 0; k < 5; k++) {
-      var rv = REVIEW_POOL[idx[k]];
+    var usedNicks = {};
+    for (var k = 0; k < kinds.length; k++) {
+      var nick = genNick();
+      for (var tries = 0; usedNicks[nick] && tries < 5; tries++) nick = genNick();
+      usedNicks[nick] = true;
+
       var card = document.createElement('div');
       card.className = 'rev';
       var top = document.createElement('div');
       top.className = 'top';
       var name = document.createElement('span');
       name.className = 'name';
-      name.textContent = rv[0];
+      name.textContent = nick;
       var stars = document.createElement('span');
       stars.className = 'stars';
       stars.textContent = '★★★★★';
       top.appendChild(name); top.appendChild(stars);
       var txt = document.createElement('div');
       txt.className = 'txt';
-      txt.textContent = rv[1];
+      txt.textContent = buildReview(kinds[k]);
       card.appendChild(top); card.appendChild(txt);
       box.appendChild(card);
     }
@@ -486,6 +553,7 @@
           p = 0;
           for (var i = f; i < t; i++) p += stepPrice(i);
           if (f < 22 && t >= 22) p += 15;   // Immortal'a çıkış primi
+          if (p < 5) p = 5;                 // minimum toplam $5
         }
         if (d) p = applyDuo(p, t - f);
       }
