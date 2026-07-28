@@ -189,7 +189,7 @@
   </div>
 
   <div class="stats reveal">
-    <div class="stat"><div class="v" id="statReviews">6863</div><div class="l">Reviews</div></div>
+    <div class="stat"><div class="v" id="statReviews">11,400</div><div class="l">Reviews</div></div>
     <div class="stat"><div class="v">99.6%</div><div class="l">Positive</div></div>
     <div class="stat"><div class="v">3+ yrs</div><div class="l">Experience</div></div>
   </div>
@@ -415,8 +415,8 @@
   }
 
   // profile stats
-  var statBase = 7827;
-  var statSince = "2026-07-05";
+  var statBase = 11400;
+  var statSince = "2026-07-28";
   var statRate = 3;
   function statCount(){
     var days = Math.max(0, Math.floor((Date.now() - new Date(statSince + "T00:00:00Z").getTime()) / 86400000));
@@ -518,11 +518,22 @@
     if (r >= 16) return 4;
     return 3;
   }
-  // duo rate
-  function applyDuo(price, rankDiff){
-    var divs = (rankDiff && rankDiff > 0) ? rankDiff : 1;
-    var add = 10 + Math.max(0, divs - 2) * 10;
-    return Math.round((price + add) / 5) * 5;
+  // duo add — direct table (no summing): 2->10, 3->15, 4->25, 5->30, 6->35, 7->40, 8+->45
+  function duoAdd(rankDiff){
+    var d = (rankDiff && rankDiff > 0) ? rankDiff : 1;
+    if (d <= 2) return 10;
+    if (d === 3) return 15;
+    if (d === 4) return 25;
+    if (d === 5) return 30;
+    if (d === 6) return 35;
+    if (d === 7) return 40;
+    return 45;
+  }
+  // round up to nearest 5 only if within $2 (rank boost / coaching)
+  function roundOffer(p){
+    if (typeof p !== 'number' || isNaN(p) || p <= 0) return p;
+    var up = Math.ceil(p / 5) * 5;
+    return (up - p) <= 2 ? up : p;
   }
   // fixed packages
   var PRICE_OVERRIDES = { '19_20':15, '19_21':20, '19_22':30, '20_22':25, '21_22':20 };
@@ -542,23 +553,20 @@
         } else {
           p = 0;
           for (var i = f; i < t; i++) p += stepPrice(i);
-          if (f < 22 && t >= 22) p += 15;
+          if (f < 22 && t >= 22) p += 10;
           if (p < 5) p = 5;
         }
-        if (d) p = applyDuo(p, t - f);
+        if (d) p += duoAdd(t - f);
+        p = roundOffer(p);
       }
     } else if (activeTab === 'wins') {
       var wr = parseInt(winRank.value, 10), wc = parseInt(winCount.value, 10), wd = duoWins.checked;
       var per = winPrice(wr);
       if (per === null) { note = 'Win boost is not available for this rank'; }
       else if (wd && wr >= 22) { note = 'Duo is not available for Immortal+'; }
-      else if (wd && wr < 16) {
-
-        p = (wc <= 5) ? (wc * 5) : (25 + (wc - 5) * 10);
-      } else {
-        p = wc * per;
-        if (p < 5) p = 5;
-        if (wd) p = applyDuo(p, 1);
+      else {
+        p = wc * per;          // exact price, no minimum, no rounding
+        if (wd) p += 10;        // duo win: flat +$10
       }
     } else if (activeTab === 'plac') {
       var pc = parseInt(placCount.value, 10);
@@ -570,10 +578,10 @@
         p = pc * perPlac;
       }
     } else {
-      p = parseInt(coachQty.value, 10) * 7;
+      p = roundOffer(parseInt(coachQty.value, 10) * 7);
     }
     priceNote.textContent = note;
-    priceOut.textContent = (p === null) ? '—' : '$' + Math.round(p);
+    priceOut.textContent = (p === null) ? '—' : '$' + p;
     priceOut.classList.remove('pop');
     void priceOut.offsetWidth;
     priceOut.classList.add('pop');
